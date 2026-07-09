@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local PDF Tools - Like iLovePDF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+    
+    <header class="glass-header">
+        <div class="logo">
+            <span class="logo-icon">📄</span>
+            <h1>PDF<span class="highlight">Tools</span></h1>
+        </div>
+        <p class="tagline">Local, Secure, and Instant</p>
+    </header>
+
+    <main class="container">
+        <section class="tools-grid">
+            <div class="tool-card" onclick="openModal('merge')">
+                <div class="icon-wrapper merge-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                </div>
+                <h2>Merge PDF</h2>
+                <p>Combine multiple PDFs into one unified document.</p>
+            </div>
+
+            <div class="tool-card" onclick="openModal('split')">
+                <div class="icon-wrapper split-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <h2>Split PDF</h2>
+                <p>Extract pages from your PDF or save each page as a separate PDF.</p>
+            </div>
+
+            <div class="tool-card" onclick="openModal('img2pdf')">
+                <div class="icon-wrapper img-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </div>
+                <h2>Images to PDF</h2>
+                <p>Convert JPG, PNG, and other images to a single PDF document.</p>
+            </div>
+        </section>
+
+        <!-- Upload Modal -->
+        <div id="upload-modal" class="modal hidden">
+            <div class="modal-content glass-panel">
+                <button class="close-btn" onclick="closeModal()">×</button>
+                <h2 id="modal-title">Upload Files</h2>
+                <p id="modal-desc">Select files from your computer.</p>
+                
+                <div class="drop-zone" id="drop-zone">
+                    <input type="file" id="file-input" multiple hidden>
+                    <div class="drop-icon">☁️</div>
+                    <p>Drag & Drop files here or <span class="browse-link" onclick="document.getElementById('file-input').click()">Browse</span></p>
+                    <div id="file-list" class="file-list"></div>
+                </div>
+
+                <div class="actions">
+                    <button id="process-btn" class="btn primary-btn disabled">Process Files</button>
+                </div>
+                
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>Processing...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>All processing is done locally. Files are permanently deleted immediately after processing.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
