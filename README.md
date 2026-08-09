@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Local PDF Tool (iLovePDF Clone)
 
 Una aplicación web completa y privada para la manipulación de archivos PDF y la conversión de imágenes, diseñada para ejecutarse en entornos locales (como Docker o Portainer). 
@@ -23,30 +22,42 @@ Esta herramienta destaca por su enfoque en la privacidad: todo el procesamiento 
 *   **Frontend:** HTML5, Vanilla CSS, Vanilla JavaScript
 *   **Despliegue:** Docker, Docker Compose
 
-## Despliegue con Docker Compose (Local)
+## Despliegue usando Docker Hub (Recomendado)
+
+La imagen ya se encuentra pre-construida y lista para usarse desde Docker Hub. Es la forma más rápida y sencilla de desplegarla.
+
+### Vía CLI (Terminal)
+Ejecuta directamente el contenedor apuntando a la imagen oficial:
+```bash
+docker run -d -p 8000:8000 --name lovepdf-clone uniextra/lovepdf:latest
+```
+
+### Vía Portainer / Docker Compose
+Si prefieres usar un `docker-compose.yml`, crea un archivo con este contenido (nota que utilizamos `image` en lugar de `build`):
+```yaml
+services:
+  pdf-tool:
+    image: uniextra/lovepdf:latest
+    container_name: local-pdf-tool
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+```
+
+## Despliegue construyendo desde el código fuente
+
+Si prefieres construir la imagen tú mismo a partir de este repositorio:
 
 1. Clona este repositorio o descarga los archivos.
-2. Abre una terminal en la raíz del proyecto.
-3. Ejecuta el comando:
+2. Ejecuta el comando:
    ```bash
    docker-compose up -d --build
    ```
-4. Accede a la aplicación desde tu navegador en `http://localhost:8000/`.
-
-## Despliegue en Portainer (Producción)
-
-Si vas a desplegar esta aplicación como un stack en Portainer, el código fuente ya está "horneado" (`COPY ./app ./app`) dentro del `Dockerfile`. 
-
-1. Ve a **Stacks** en Portainer y haz clic en **Add stack**.
-2. Sube el código fuente o enlaza el repositorio.
-3. Utiliza el `docker-compose.yml` provisto (que no incluye mapeo de volumen local a `/app/app` para evitar sobreescritura).
-4. Despliega el stack.
+3. Accede a la aplicación desde tu navegador en `http://localhost:8000/`.
 
 ## Privacidad
 
 > [!IMPORTANT]
 > Se utiliza el módulo `tempfile` de Python y tareas en segundo plano (`BackgroundTasks` de FastAPI) para la gestión efímera de los archivos. Ningún documento subido ni generado permanecerá en el sistema de archivos del servidor después de la solicitud.
-=======
-# LovePDF
-Local IlovePDF mini clone
->>>>>>> c28f5dedb90e67d4318dcb06b5f33dde92a971a1
