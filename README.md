@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Local PDF Tool (iLovePDF Clone)
 
 Una aplicación web completa y privada para la manipulación de archivos PDF y la conversión de imágenes, diseñada para ejecutarse en entornos locales (como Docker o Portainer). 
@@ -45,3 +46,7 @@ Si vas a desplegar esta aplicación como un stack en Portainer, el código fuent
 
 > [!IMPORTANT]
 > Se utiliza el módulo `tempfile` de Python y tareas en segundo plano (`BackgroundTasks` de FastAPI) para la gestión efímera de los archivos. Ningún documento subido ni generado permanecerá en el sistema de archivos del servidor después de la solicitud.
+=======
+# LovePDF
+Local IlovePDF mini clone
+>>>>>>> c28f5dedb90e67d4318dcb06b5f33dde92a971a1
