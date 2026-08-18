@@ -1,6 +1,5 @@
-from io import BytesIO
-from typing import List, Optional
 import zipfile
+from io import BytesIO
 
 from PIL import Image
 from pillow_heif import register_heif_opener
@@ -9,7 +8,7 @@ from PyPDF2 import PdfReader, PdfWriter
 register_heif_opener()
 
 
-def merge_pdfs(file_paths: List[str]) -> BytesIO:
+def merge_pdfs(file_paths: list[str]) -> BytesIO:
     writer = PdfWriter()
     for path in file_paths:
         reader = PdfReader(path)
@@ -38,8 +37,8 @@ def split_pdf(file_path: str) -> BytesIO:
 
 
 def images_to_pdf(
-    image_paths: List[str], rotations: Optional[List[int]] = None
-) -> Optional[BytesIO]:
+    image_paths: list[str], rotations: list[int] | None = None
+) -> BytesIO | None:
     images = []
     if not rotations:
         rotations = [0] * len(image_paths)

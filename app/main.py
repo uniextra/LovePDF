@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 import tempfile
-from typing import List, Union
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -25,13 +24,13 @@ def cleanup_files(*file_paths: str) -> None:
             if os.path.exists(path):
                 os.remove(path)
         except Exception as e:
-            logging.error(f"Error deleting file {path}: {e}")  # noqa: BLE001
+            logging.error(f"Error deleting file {path}: {e}")
 
 
 @app.post("/api/merge")
 async def api_merge_pdfs(
-    background_tasks: BackgroundTasks, files: List[UploadFile] = File(...)  # noqa: B008
-) -> Union[FileResponse, JSONResponse]:
+    background_tasks: BackgroundTasks, files: list[UploadFile] = File(...)  # noqa: B008
+) -> FileResponse | JSONResponse:
     temp_files = []
     try:
         for file in files:
@@ -51,7 +50,7 @@ async def api_merge_pdfs(
         return FileResponse(
             out_temp_name, filename="merged.pdf", media_type="application/pdf"
         )
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         logging.error(f"Merge error: {e}", exc_info=True)
         background_tasks.add_task(cleanup_files, *temp_files)
         return JSONResponse(status_code=400, content={"error": str(e)})
@@ -60,7 +59,7 @@ async def api_merge_pdfs(
 @app.post("/api/split")
 async def api_split_pdf(
     background_tasks: BackgroundTasks, file: UploadFile = File(...)  # noqa: B008
-) -> Union[FileResponse, JSONResponse]:
+) -> FileResponse | JSONResponse:
     temp_file_name = ""
     out_temp_name = ""
     try:
@@ -79,7 +78,7 @@ async def api_split_pdf(
         return FileResponse(
             out_temp_name, filename="split_pages.zip", media_type="application/zip"
         )
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         logging.error(f"Split error: {e}", exc_info=True)
         if temp_file_name:
             background_tasks.add_task(cleanup_files, temp_file_name)
@@ -89,9 +88,9 @@ async def api_split_pdf(
 @app.post("/api/img2pdf")
 async def api_img2pdf(
     background_tasks: BackgroundTasks,
-    files: List[UploadFile] = File(...),  # noqa: B008
-    rotations: str = Form(None),  # noqa: B008
-) -> Union[FileResponse, JSONResponse]:
+    files: list[UploadFile] = File(...),  # noqa: B008
+    rotations: str = Form(None),
+) -> FileResponse | JSONResponse:
     temp_files = []
     try:
         rot_list = []
@@ -121,7 +120,7 @@ async def api_img2pdf(
         return FileResponse(
             out_temp_name, filename="images.pdf", media_type="application/pdf"
         )
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         logging.error(f"Image conversion error: {e}", exc_info=True)
         background_tasks.add_task(cleanup_files, *temp_files)
         return JSONResponse(status_code=400, content={"error": str(e)})
