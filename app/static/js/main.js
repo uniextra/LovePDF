@@ -6,21 +6,27 @@ let draggedIndex = -1;
 const modalInfos = {
     'merge': {
         title: 'Merge PDF',
-        desc: 'Select PDFs to combine into a single file. Drag to reorder.',
+        desc: 'Select multiple PDF files to combine into a single document. Drag or use arrows to reorder.',
         accept: '.pdf',
-        multiple: true
+        multiple: true,
+        buttonText: 'Merge PDFs',
+        formats: 'Supports .PDF'
     },
     'split': {
         title: 'Split PDF',
-        desc: 'Select a PDF to extract pages (returns a ZIP).',
+        desc: 'Select a PDF to extract each page into separate PDF files (downloaded in a ZIP).',
         accept: '.pdf',
-        multiple: false
+        multiple: false,
+        buttonText: 'Split PDF',
+        formats: 'Supports .PDF'
     },
     'img2pdf': {
         title: 'Images to PDF',
-        desc: 'Select images to convert to PDF. Drag to reorder, use ⟳ to rotate.',
+        desc: 'Select images to convert into a single PDF. Click ⟳ to rotate each image, drag or use arrows to reorder.',
         accept: 'image/*',
-        multiple: true
+        multiple: true,
+        buttonText: 'Convert to PDF',
+        formats: 'Supports .JPG, .PNG, .HEIC, .WEBP'
     }
 };
 
@@ -30,15 +36,18 @@ const fileInput = document.getElementById('file-input');
 const fileList = document.getElementById('file-list');
 const processBtn = document.getElementById('process-btn');
 const loading = document.getElementById('loading');
+const fileCountLabel = document.getElementById('file-count-label');
+const formatHints = document.getElementById('format-hints');
 
 function openModal(tool) {
     currentTool = tool;
     selectedFiles = [];
     selectedRotations = [];
-    updateFileList();
     
     document.getElementById('modal-title').textContent = modalInfos[tool].title;
     document.getElementById('modal-desc').textContent = modalInfos[tool].desc;
+    if (formatHints) formatHints.textContent = modalInfos[tool].formats;
+    
     fileInput.accept = modalInfos[tool].accept;
     if (modalInfos[tool].multiple) {
         fileInput.setAttribute('multiple', '');
@@ -46,18 +55,23 @@ function openModal(tool) {
         fileInput.removeAttribute('multiple');
     }
     
+    updateFileList();
+    
     modal.classList.add('active');
-    modal.classList.remove('hidden');
-    processBtn.classList.remove('hidden');
+    processBtn.disabled = true;
     loading.classList.add('hidden');
 }
 
 function closeModal() {
     modal.classList.remove('active');
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
 }
+
+// Close on backdrop click
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        closeModal();
+    }
+});
 
 // Drag & Drop Handlers for upload zone
 dropZone.addEventListener('dragover', (e) => {
@@ -72,11 +86,19 @@ dropZone.addEventListener('dragleave', () => {
 dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
-    handleFiles(e.dataTransfer.files);
+    if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        handleFiles(e.dataTransfer.files);
+    }
+});
+
+dropZone.addEventListener('click', () => {
+    fileInput.click();
 });
 
 fileInput.addEventListener('change', (e) => {
-    handleFiles(e.target.files);
+    if (e.target.files.length > 0) {
+        handleFiles(e.target.files);
+    }
 });
 
 function handleFiles(files) {
@@ -113,7 +135,7 @@ function dragStart(e, index) {
     e.stopPropagation();
     draggedIndex = index;
     const item = e.target.closest('.draggable-item');
-    if(item) {
+    if (item) {
         setTimeout(() => item.classList.add('dragging'), 0);
     }
 }
@@ -146,7 +168,7 @@ function drop(e, dropIndex) {
 function dragEnd(e) {
     e.stopPropagation();
     const item = e.target.closest('.draggable-item');
-    if(item) {
+    if (item) {
         item.classList.remove('dragging');
     }
 }
@@ -170,8 +192,19 @@ function moveItem(index, direction) {
 function updateFileList() {
     fileList.innerHTML = '';
     
-    if (selectedFiles.length > 0) {
-        processBtn.classList.remove('disabled');
+    const count = selectedFiles.length;
+    if (fileCountLabel) {
+        if (count === 0) {
+            fileCountLabel.textContent = 'No files selected';
+        } else if (count === 1) {
+            fileCountLabel.textContent = '1 file selected';
+        } else {
+            fileCountLabel.textContent = `${count} files selected`;
+        }
+    }
+    
+    if (count > 0) {
+        processBtn.disabled = false;
         
         if (currentTool === 'img2pdf') {
             const grid = document.createElement('div');
@@ -191,12 +224,12 @@ function updateFileList() {
                     <div class="thumb-wrapper" style="pointer-events: none;">
                         <img id="preview-img-${index}" src="${url}" style="transform: rotate(${selectedRotations[index]}deg)" alt="preview">
                     </div>
-                    <button class="rotate-btn" onclick="rotateImage(${index})">⟳</button>
+                    <button class="rotate-btn" onclick="rotateImage(${index})" title="Rotate 90°">⟳</button>
                     <div class="thumb-info">
-                        <span class="move-btn" onclick="moveItem(${index}, -1)">◀</span>
+                        <span class="move-btn" onclick="moveItem(${index}, -1)" title="Move left">◀</span>
                         <span class="thumb-name" title="${file.name}">${file.name}</span>
-                        <span class="move-btn" onclick="moveItem(${index}, 1)">▶</span>
-                        <span class="thumb-remove" onclick="removeFile(${index})">✕</span>
+                        <span class="move-btn" onclick="moveItem(${index}, 1)" title="Move right">▶</span>
+                        <span class="thumb-remove" onclick="removeFile(${index})" title="Remove">✕</span>
                     </div>
                 `;
                 grid.appendChild(el);
@@ -213,21 +246,28 @@ function updateFileList() {
                 el.ondragend = dragEnd;
                 
                 el.innerHTML = `
-                    <span style="pointer-events: none;">☰ 📄 ${file.name}</span>
-                    <span style="cursor:pointer; color:red;" onclick="removeFile(${index})">✕</span>
+                    <div class="flex items-center gap-2" style="pointer-events: none;">
+                        <span class="material-symbols-outlined text-slate-400 text-[18px]">drag_indicator</span>
+                        <span class="material-symbols-outlined text-red-500 text-[20px]">picture_as_pdf</span>
+                        <span class="truncate max-w-[280px] sm:max-w-md">${file.name}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="move-btn text-xs px-1.5 py-0.5" onclick="moveItem(${index}, -1)" title="Move up">▲</span>
+                        <span class="move-btn text-xs px-1.5 py-0.5" onclick="moveItem(${index}, 1)" title="Move down">▼</span>
+                        <span class="thumb-remove text-sm px-1.5 py-0.5 ml-1" onclick="removeFile(${index})" title="Remove">✕</span>
+                    </div>
                 `;
                 fileList.appendChild(el);
             });
         }
     } else {
-        processBtn.classList.add('disabled');
+        processBtn.disabled = true;
     }
 }
 
 processBtn.addEventListener('click', async () => {
-    if (selectedFiles.length === 0 || processBtn.classList.contains('disabled')) return;
+    if (selectedFiles.length === 0 || processBtn.disabled) return;
     
-    processBtn.classList.add('hidden');
     loading.classList.remove('hidden');
     
     const formData = new FormData();
@@ -255,9 +295,9 @@ processBtn.addEventListener('click', async () => {
             const contentType = response.headers.get("content-type");
             if (contentType && contentType.includes("application/json")) {
                 const err = await response.json();
-                throw new Error(err.error || "Unknown error");
+                throw new Error(err.error || "Unknown error occurred");
             }
-            throw new Error('Processing failed');
+            throw new Error('Processing failed on server');
         }
         
         const blob = await response.blob();
@@ -284,7 +324,7 @@ processBtn.addEventListener('click', async () => {
         closeModal();
     } catch (error) {
         alert("Error: " + error.message);
-        processBtn.classList.remove('hidden');
+    } finally {
         loading.classList.add('hidden');
     }
 });

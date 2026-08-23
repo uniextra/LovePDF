@@ -27,10 +27,10 @@ def cleanup_files(*file_paths: str) -> None:
             logging.error(f"Error deleting file {path}: {e}")
 
 
-@app.post("/api/merge")
+@app.post("/api/merge", response_model=None)
 async def api_merge_pdfs(
     background_tasks: BackgroundTasks, files: list[UploadFile] = File(...)  # noqa: B008
-) -> FileResponse | JSONResponse:
+):
     temp_files = []
     try:
         for file in files:
@@ -56,10 +56,10 @@ async def api_merge_pdfs(
         return JSONResponse(status_code=400, content={"error": str(e)})
 
 
-@app.post("/api/split")
+@app.post("/api/split", response_model=None)
 async def api_split_pdf(
     background_tasks: BackgroundTasks, file: UploadFile = File(...)  # noqa: B008
-) -> FileResponse | JSONResponse:
+):
     temp_file_name = ""
     out_temp_name = ""
     try:
@@ -85,12 +85,12 @@ async def api_split_pdf(
         return JSONResponse(status_code=400, content={"error": str(e)})
 
 
-@app.post("/api/img2pdf")
+@app.post("/api/img2pdf", response_model=None)
 async def api_img2pdf(
     background_tasks: BackgroundTasks,
     files: list[UploadFile] = File(...),  # noqa: B008
     rotations: str = Form(None),
-) -> FileResponse | JSONResponse:
+):
     temp_files = []
     try:
         rot_list = []
