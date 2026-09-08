@@ -3,7 +3,7 @@ from io import BytesIO
 
 from PIL import Image
 from pillow_heif import register_heif_opener
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 
 register_heif_opener()
 

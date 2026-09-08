@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import tempfile
+from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -12,9 +13,12 @@ from app.pdf_utils import images_to_pdf, merge_pdfs, split_pdf
 
 app = FastAPI(title="Local PDF Tool")
 
-os.makedirs("app/static", exist_ok=True)
-os.makedirs("app/static/css", exist_ok=True)
-os.makedirs("app/static/js", exist_ok=True)
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB per file
+
+os.makedirs(STATIC_DIR / "css", exist_ok=True)
+os.makedirs(STATIC_DIR / "js", exist_ok=True)
 
 
 def cleanup_files(*file_paths: str) -> None:
@@ -27,6 +31,17 @@ def cleanup_files(*file_paths: str) -> None:
             logging.error(f"Error deleting file {path}: {e}")
 
 
+async def validate_file_size(upload: UploadFile) -> None:
+    """Raise ValueError if a single uploaded file exceeds MAX_FILE_SIZE."""
+    upload.file.seek(0, 2)  # seek to end
+    size = upload.file.tell()
+    upload.file.seek(0)  # reset to start
+    if size > MAX_FILE_SIZE:
+        raise ValueError(
+            f"File '{upload.filename}' exceeds the {MAX_FILE_SIZE // (1024 * 1024)} MB limit"
+        )
+
+
 @app.post("/api/merge", response_model=None)
 async def api_merge_pdfs(
     background_tasks: BackgroundTasks, files: list[UploadFile] = File(...)  # noqa: B008
@@ -34,6 +49,7 @@ async def api_merge_pdfs(
     temp_files = []
     try:
         for file in files:
+            await validate_file_size(file)
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
                 shutil.copyfileobj(file.file, temp_file)
                 temp_files.append(temp_file.name)
@@ -63,6 +79,7 @@ async def api_split_pdf(
     temp_file_name = ""
     out_temp_name = ""
     try:
+        await validate_file_size(file)
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
             shutil.copyfileobj(file.file, temp_file)
             temp_file_name = temp_file.name
@@ -80,8 +97,9 @@ async def api_split_pdf(
         )
     except Exception as e:
         logging.error(f"Split error: {e}", exc_info=True)
-        if temp_file_name:
-            background_tasks.add_task(cleanup_files, temp_file_name)
+        files_to_clean = [f for f in [temp_file_name, out_temp_name] if f]
+        if files_to_clean:
+            background_tasks.add_task(cleanup_files, *files_to_clean)
         return JSONResponse(status_code=400, content={"error": str(e)})
 
 
@@ -101,6 +119,7 @@ async def api_img2pdf(
                 pass
 
         for file in files:
+            await validate_file_size(file)
             ext = os.path.splitext(file.filename)[1]
             with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as temp_file:
                 shutil.copyfileobj(file.file, temp_file)
@@ -127,4 +146,4 @@ async def api_img2pdf(
 
 
 # Serve static files for frontend
-app.mount("/", StaticFiles(directory="app/static", html=True), name="static")
+app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
