@@ -1,5 +1,14 @@
 # Local PDF Tool (iLovePDF Clone)
 
+> [!WARNING]
+> **This repository is no longer maintained.**
+>
+> This project has been discontinued and is provided as-is. No further updates, bug fixes, feature enhancements, or support are planned.
+>
+> If you are looking for an actively maintained alternative, consider [BentoPDF](https://github.com/alam00000/bentopdf), a privacy-focused, open-source PDF toolkit that can be self-hosted. See its [self-hosting documentation](https://www.bentopdf.com/docs/self-hosting) for deployment instructions.
+>
+> You are welcome to fork this repository and adapt it to your needs, but use it at your own risk.
+
 Una aplicación web completa y privada para la manipulación de archivos PDF y la conversión de imágenes, diseñada para ejecutarse en entornos locales (como Docker o Portainer). 
 
 Esta herramienta destaca por su enfoque en la privacidad: todo el procesamiento se realiza temporalmente en la memoria del contenedor, y los archivos se destruyen de forma inmediata e irrecuperable una vez que el usuario los descarga.
